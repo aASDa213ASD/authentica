@@ -1,0 +1,101 @@
+@font-face
+{
+    font-family: "ProductSans";
+    src: url("../fonts/productsans/Product-Sans-Regular.ttf") format("truetype");
+}
+
+@font-face
+{
+    font-family: "ProductSansMono";
+    src: url("../fonts/productsansmono/Product-Sans-Mono-Regular.ttf") format("truetype");
+}
+
+:root
+{
+    --bg-main: #000000;
+    --bg-secondary: #000000;
+    --text-main: #000000;
+    --text-secondary: #000000;
+}
+
+body
+{
+    font-family: "ProductSans";
+    color: #ffffff;
+    background-color: #000000;
+}
+
+/* Scrollbar hidden */
+body::-webkit-scrollbar
+{
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;    /* Firefox */
+    display: none;            /* Chrome, Safari, Opera */
+}
+
+::-webkit-scrollbar
+{
+    background-color: transparent !important;
+    width: 3px;
+}
+
+::-webkit-scrollbar-thumb
+{
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Selection colors */
+::selection
+{
+    color: #000000;
+    background-color: #cacaca;
+}
+
+::-moz-selection
+{
+    color: #000000;
+    background-color: #cacaca;
+}
+
+/* Nerd font */
+.nf
+{
+    font-family: "NerdFontsSymbols Nerd Font";
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 1;
+    margin-bottom: 0px;
+}
+
+@keyframes granimate
+{
+    0%   { background-position: 0%   50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0%   50%; }
+}
+
+.bg-diya-gradient
+{
+    filter: blur(20);
+    content: "";
+    display: block;
+    z-index: -1;
+    background-image: linear-gradient(
+            217deg,
+            rgba(215, 165, 225, 0.8),
+            rgba(255, 0, 0, 0.0) 50.71%),
+    linear-gradient(
+            127deg,
+            rgba(142, 255, 142, 0.8),
+            rgba(0, 255, 0, 0.0) 70.71%
+    ),
+    linear-gradient(
+            336deg,
+            rgba(147, 190, 250, 0.8),
+            rgba(0, 0, 255, 0.0) 70.71%
+    );
+
+    background-size: 150vw 150vh;
+    animation: 15s linear 0s infinite alternate none running granimate
+}

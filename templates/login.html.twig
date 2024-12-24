@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include "css.html.twig" %}
+    {% include "js.html.twig" %}
+    <title>Авторизація</title>
+</head>
+
+<body class="h-screen flex bg-gray-900 text-gray-200">
+<!-- Left Side -->
+<div class="bg-diya-gradient w-1/3 flex flex-col justify-center items-center">
+    <h1 class="text-4xl font-bold">Authentica</h1>
+</div>
+
+<!-- Right Side -->
+<div class="bg-black w-2/3 flex justify-center items-center">
+    <form class="w-full max-w-sm space-y-6" method="post">
+        <h2 class="text-3xl font-semibold text-center pb-5">Welcome home, master</h2>
+
+        {% for message in app.flashes("message") %}
+            <div>{{ message }} - {{ app.request.server.get("REMOTE_ADDR") }}</div>
+        {% endfor %}
+
+        {% if error %}
+            <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <!-- Email -->
+        <div>
+            <label for="email" class="block text-gray-400 text-sm mb-1">Email address</label>
+            <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    class="w-full bg-teal-950/60 border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-100 p-3"
+                    placeholder="Your Email"
+                    required>
+        </div>
+
+        <!-- Password -->
+        <div>
+            <label for="password" class="block text-gray-400 text-sm mb-1">Password</label>
+            <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    class="w-full bg-teal-950/60 border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-100 p-3"
+                    placeholder="Your Password"
+                    required>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+                type="submit"
+                class="w-full bg-transparent border border-teal-950 text-gray-100 rounded-lg p-3 font-semibold hover:bg-teal-900 transition">
+            Login
+        </button>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <!-- Additional Link -->
+        <p class="text-sm text-center text-gray-400">
+            Don't have an account? <a href="#" class="text-blue-400 hover:underline">Get one</a>
+        </p>
+    </form>
+</div>
+</body>
+
+</html>

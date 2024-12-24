@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% for what in app.flashes('error') %}
+        <div>{{ what }}</div>
+    {% endfor %}
+
+    <div class="d-flex align-items-center fw-bold pb-3 px-2 border-bottom border-secondary-subtle">
+        <a class="text-white">Користувачі</a>
+        <div class="d-grid ms-auto">
+            {% if is_granted("ROLE_DEVELOPER") %}
+                <a href="{{ path('user_edit') }}" class="btn btn-outline-dark border-0 rounded-0 fw-semibold py-1 px-3">
+                    <i class="nf nf-md-form_textbox_password me-1"></i> Реєстрація
+                </a>
+            {% else %}
+                <a href="{{ path('user_edit') }}" class="btn btn-outline-dark border-0 rounded-0 fw-semibold py-1 px-3 disabled">
+                    <i class="nf nf-md-form_textbox_password me-1"></i> Реєстрація
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% for message in app.flashes('message') %}
+        <div class="alert alert-warning border-0 rounded-0">{{ message }}</div>
+    {% endfor %}
+
+    {% for user in user_list %}
+        <div class="container p-3 mb-3 border border-3 border-dark {% if app.user == user %}border-diya-gradient{% endif %}">
+            <div class="row">
+                <div class="col-sm-9">
+                    <div class="mb-4">
+                        <a class="text-white fw-semibold fs-5 me-2">{{ user.getLogin() }}</a>
+                        {% if app.user == user %}
+                            <a class="text-secondary fs-5">(Ви)</a>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <a class="text-secondary">Роль</a>
+                                <p class="text-white fw-semibold">{{ resolve_role_name(user.roles[0]) }}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <a class="text-secondary">Ідентифікаційний номер</a>
+                                <p class="text-white fw-semibold">{{ user.getUserHash() }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <a class="text-secondary">Пошта</a>
+                                <p class="text-white fw-semibold">{{ user.getEmail() }}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <a class="text-secondary">Остання сесія</a>
+                                {% if not user.getLastLogin() %}
+                                    <p class="text-white fw-semibold">Не встановлено</p>
+                                {% else  %}
+                                    <p class="text-white fw-semibold">{{ user.getLastLogin()|default('Never')|date('d.m.Y H:i') }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-3 d-flex flex-column">
+                    {% if is_granted('ROLE_DEVELOPER') %}
+                        <a href="{{ path('user_edit', { user_id:user.id }) }}" class="btn btn-outline-dark border-0 rounded-0 mb-1 w-100"><i class="nf nf-md-square_edit_outline me-1"></i> Редагувати</a>
+                        {% if user != app.user %}
+                            <a href="#" class="btn btn-outline-dark border-0 rounded-0 mb-1 w-100" data-bs-toggle="modal" data-bs-target="#wipe-confirmation" data-url="{{ path('user_delete', { user_id:user.id }) }}"><i class="nf nf-md-tray_remove me-1"></i> Видалити</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

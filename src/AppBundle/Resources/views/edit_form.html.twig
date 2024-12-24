@@ -1,0 +1,42 @@
+{% extends "index.html.twig" %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-xl-7 mx-auto">
+            <div id="users-table_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
+                {% if title is defined %}
+                    <div class="card-header d-flex align-items-center fw-bold fs-5 p-3 border-bottom">
+                        <a class="text-dark">
+                            {% if icon is defined %}
+                                <i class="nf {{ icon }} me-1"></i>
+                            {% endif %}
+                            {{ title }}
+                        </a>
+                    </div>
+                {% endif %}
+                <div class="card-body m-3">
+                    {% for message in app.flashes('message') %}
+                        <div class="alert alert-danger border-0 rounded-0">{{ message }}</div>
+                    {% endfor %}
+
+                    {{ form_start(form) }}
+                    {{ form_errors(form) }}
+                    {% for field in form %}
+                        <div class="col-md-12 mb-3">
+                            {{ form_row(field) }}
+                        </div>
+                    {% endfor %}
+                    <div class="d-flex">
+                        <div class="ms-auto">
+                            <button type="submit" class="btn btn-outline-dark border-0 rounded-0 mx-1 px-3"><i class="nf nf-fa-check_circle me-2"></i>Save</button>
+                            <a href="javascript:history.go(-1)" class="btn btn-outline-dark border-0 rounded-0 px-3"><i class="nf nf-md-close_circle me-2"></i>Cancel</a>
+                        </div>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'js.html.twig' %}
+{% endblock %}

@@ -2,15 +2,23 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}Authentica{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
+            {% include "css.html.twig" %}
         {% endblock %}
 
         {% block javascripts %}
+            {% include "js.html.twig" %}
         {% endblock %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+    <body class="h-screen px-[3px] py-[5px] bg-black text-dataflowText overflow-y-auto select-none">
+        <!-- Main Container with Sidebar and Content Area -->
+        <div class="min-w-full min-h-full max-w-full max-h-full bg-dataflowBackground shadow-neon-teal rounded-md flex border border-gray-500">
+            <main class="flex-1 p-4 overflow-y-auto transition-all duration-300">
+                {% block body %}
+                {% endblock %}
+            </main>
+        </div>
     </body>
 </html>

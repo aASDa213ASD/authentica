@@ -6,3 +6,8 @@ when@dev:
     web_profiler_profiler:
         resource: '@WebProfilerBundle/Resources/config/routing/profiler.xml'
         prefix: /_profiler
+
+    # Workaround for the annoying bug with profiler that breaks CSS on toolbar
+    _wdt_stylesheet:
+        path: /custom_wdt/styles
+        controller: web_profiler.controller.profiler::toolbarStylesheetAction
