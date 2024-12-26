@@ -20,7 +20,7 @@ security:
         main:
             lazy: true
             provider: user_provider
-            custom_authenticator: App\AppBundle\Authenticator\Login
+            custom_authenticator: App\AuthBundle\Authenticator\Login
             logout:
                 path: app_logout
 
