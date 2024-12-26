@@ -75,7 +75,7 @@ body::-webkit-scrollbar
     100% { background-position: 0%   50%; }
 }
 
-.bg-diya-gradient
+.bg-animated-gradient
 {
     filter: blur(20);
     content: "";

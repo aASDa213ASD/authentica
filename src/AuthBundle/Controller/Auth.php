@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\AppBundle\Controller;
+namespace App\AuthBundle\Controller;
 
 use App\UserBundle\Entity\User;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
+#[Route('/auth')]
 class Auth extends AbstractController
 {
 	private ManagerRegistry $manager_registry;
@@ -39,6 +40,12 @@ class Auth extends AbstractController
 		);
 	}
 
+	#[Route('/logout', name: 'app_logout')]
+	public function logout(): void
+	{
+		throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+	}
+
 	#[Route('/security', name: 'app_security')]
 	public function security(): Response
 	{
@@ -54,11 +61,5 @@ class Auth extends AbstractController
 		$this->manager_registry->getManager()->flush();
 
 		return $this->redirect($this->generateUrl('system_user_list'));
-	}
-
-	#[Route('/logout', name: 'app_logout')]
-	public function logout(): void
-	{
-		throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
 	}
 }
