@@ -48,12 +48,12 @@ class UserController extends AbstractController
 		if (!$user_id)
 		{
 			$user  = new User();
-			$title = 'Реєстрація користувача';
+			$title = 'User registration';
 			$icon  = 'nf-fa-circle_user';
 		} else
 		{
 			$user = $this->entity_manager->getRepository(User::class)->find($user_id);
-			$title = "Редагування користувача {$user->getEmail()}";
+			$title = "Editing user {$user->getEmail()}";
 			$icon  = 'nf-md-account_edit';
 		}
 
@@ -69,7 +69,7 @@ class UserController extends AbstractController
 				$user->setPassword($encoded);
 			} else if (!$user->isVerified())
 			{
-				$this->addFlash('message', 'Пароль не встановлено');
+				$this->addFlash('message', 'No password given');
 				return $this->redirect($this->generateUrl('user_edit'));
 			}
 
@@ -77,6 +77,7 @@ class UserController extends AbstractController
 
 			$this->entity_manager->persist($user);
 			$this->entity_manager->flush();
+
 			return $this->redirectToRoute('system_user_list');
 		}
 
@@ -98,12 +99,13 @@ class UserController extends AbstractController
 
 		if (in_array('ROLE_DEVELOPER', $user->getRoles()))
 		{
-			$this->addFlash('message', 'Неможливо видалити розробника');
+			$this->addFlash('message', 'Can not delete a developer');
 			return $this->redirect($this->generateUrl('system_user_list'));
 		}
 
 		$this->entity_manager->remove($user);
 		$this->entity_manager->flush();
+
 		return $this->redirectToRoute('system_user_list');
 	}
 
