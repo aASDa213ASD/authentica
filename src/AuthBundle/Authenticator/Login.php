@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AuthBundle\Authenticator;
 
+use Exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,10 +30,10 @@ class Login extends AbstractLoginFormAuthenticator
 		$this->url_generator = $url_generator;
 	}
 
+	/** @throws Exception */
 	public function authenticate(Request $request): Passport
 	{
 		$email = $request->request->get('email', '');
-
 		$request->getSession()->set('_security.last_username', $email);
 
 		return new Passport(

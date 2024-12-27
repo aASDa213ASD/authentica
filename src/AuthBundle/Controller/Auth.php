@@ -7,6 +7,7 @@ namespace App\AuthBundle\Controller;
 use App\UserBundle\Entity\User;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -21,12 +22,40 @@ class Auth extends AbstractController
 		$this->manager_registry = $manager_registry;
 	}
 
-	#[Route('/login', name: 'app_login')]
+	#[Route('/login/invoke', name: 'app_login')]
 	public function login(AuthenticationUtils $authenticationUtils): Response
+	{
+		return $this->render(
+			'@Auth/login.html.twig', []
+		);
+	}
+
+	#[Route('/login', name: 'app_authenticate')]
+	public function authenticate(Request $request, AuthenticationUtils $authenticationUtils): Response
 	{
 		if ($this->getUser())
 		{
 			return $this->redirectToRoute('app_security');
+		}
+
+		$step = $request->get('step', 'email');
+
+		if ($request->getMethod() === 'POST')
+		{
+			dd($step);
+
+			if ($step === 'email')
+			{
+				$email = $request->request->get('email');
+
+				if ($this->manager_registry->getRepository(User::class)->findOneBy(['email' => $email]))
+				{
+					return $this->redirectToRoute('app_login', ['step' => 'password', 'email' => $email]);
+				}
+
+				$this->addFlash('warning', 'Create your account');
+				return $this->redirectToRoute('app_register');
+			}
 		}
 
 		$error = $authenticationUtils->getLastAuthenticationError();
@@ -35,7 +64,8 @@ class Auth extends AbstractController
 		return $this->render(
 			'@Auth/login.html.twig', [
 				'last_username' => $last_username,
-				'error' => $error
+				'error' => $error,
+				'step' => $step,
 			]
 		);
 	}
