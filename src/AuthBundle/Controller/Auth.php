@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\AuthBundle\Controller;
 
+use App\AuthBundle\Model\AuthStage;
 use App\UserBundle\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Entity;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,19 +19,17 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 #[Route('/auth')]
 class Auth extends AbstractController
 {
-	private ManagerRegistry $manager_registry;
+	private EntityManagerInterface $em;
 
-	public function __construct(ManagerRegistry $manager_registry)
+	public function __construct(EntityManagerInterface $em)
 	{
-		$this->manager_registry = $manager_registry;
+		$this->em = $em;
 	}
 
 	#[Route('/login/invoke', name: 'app_login')]
-	public function login(AuthenticationUtils $authenticationUtils): Response
+	public function login(AuthenticationUtils $authenticationUtils): JsonResponse
 	{
-		return $this->render(
-			'@Auth/login.html.twig', []
-		);
+		return new JsonResponse(['message' => 'Login request received']);
 	}
 
 	#[Route('/login', name: 'app_authenticate')]
@@ -38,42 +40,53 @@ class Auth extends AbstractController
 			return $this->redirectToRoute('app_security');
 		}
 
-		$step = $request->get('step', 'email');
+		$stage = $request->get('stage', AuthStage::AUTHENTICATION);
+		$error = $request->get('error') ?? $authenticationUtils->getLastAuthenticationError();
+		$email = $request->request->get('email') ?? $request->query->get('email');
+		$last_username = $authenticationUtils->getLastUsername();
+
+		if (!empty($email))
+		{
+			$last_username = $email;
+		}
 
 		if ($request->getMethod() === 'POST')
 		{
-			dd($step);
-
-			if ($step === 'email')
+			if ($stage === AuthStage::AUTHENTICATION)
 			{
 				$email = $request->request->get('email');
+				$user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
 
-				if ($this->manager_registry->getRepository(User::class)->findOneBy(['email' => $email]))
+				if ($user instanceof User)
 				{
-					return $this->redirectToRoute('app_login', ['step' => 'password', 'email' => $email]);
+					$stage = AuthStage::AUTHORIZATION;
 				}
-
-				$this->addFlash('warning', 'Create your account');
-				return $this->redirectToRoute('app_register');
+				else
+				{
+					$this->addFlash('message', "<span>Email $email seems to be available, you may create your account <a href='{$this->generateUrl('app_register')}' class='font-bold underline'>here</a></span>");
+					return $this->redirectToRoute('app_authenticate');
+				}
 			}
 		}
-
-		$error = $authenticationUtils->getLastAuthenticationError();
-		$last_username = $authenticationUtils->getLastUsername();
 
 		return $this->render(
 			'@Auth/login.html.twig', [
 				'last_username' => $last_username,
 				'error' => $error,
-				'step' => $step,
+				'stage' => $stage,
 			]
 		);
 	}
 
-	#[Route('/logout', name: 'app_logout')]
-	public function logout(): void
+	#[Route('/registration', name: 'app_register')]
+	public function register(Request $request, AuthenticationUtils $authenticationUtils): JsonResponse
 	{
-		throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+		if ($this->getUser())
+		{
+			return $this->redirectToRoute('app_security');
+		}
+
+		return new JsonResponse(['message' => 'Registration is disabled']);
 	}
 
 	#[Route('/security', name: 'app_security')]
@@ -87,9 +100,15 @@ class Auth extends AbstractController
 		}
 
 		$user->setLastLogin(new \DateTime());
-		$this->manager_registry->getManager()->persist($user);
-		$this->manager_registry->getManager()->flush();
+		$this->em->persist($user);
+		$this->em->flush();
 
 		return $this->redirect($this->generateUrl('system_user_list'));
+	}
+
+	#[Route('/logout', name: 'app_logout')]
+	public function logout(): void
+	{
+		throw new \LogicException('INTERCEPTED_BY_FIREWALL');
 	}
 }
