@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\UserBundle\Controller;
 
+use App\AuthBundle\Model\AuthStage;
 use App\UserBundle\Entity\User;
 use App\UserBundle\Form\UserType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,8 +15,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/system/user')]
-#[IsGranted('ROLE_ADMIN')]
+#[Route('/user')]
 class UserController extends AbstractController
 {
 	private EntityManagerInterface $entity_manager;
@@ -29,7 +29,52 @@ class UserController extends AbstractController
 		$this->user_password_encoder = $user_password_encoder;
 	}
 
+	#[Route('/create', name: 'user_create')]
+	public function create(Request $request, ?int $user_id = null): Response
+	{
+		$user = new User();
+		$title = 'Creating new user';
+		$icon  = 'nf-md-account_edit';
+
+		$form = $this->createForm(UserType::class, $user);
+		$form->handleRequest($request);
+
+		if ($form->isSubmitted() && $form->isValid())
+		{
+			$password = $form['password']->getData();
+			if ($password)
+			{
+				$encoded = $this->user_password_encoder->hashPassword($user, trim($password));
+				$user->setPassword($encoded);
+			} else if (!$user->isVerified())
+			{
+				$this->addFlash('message', 'No password given');
+				return $this->redirect($this->generateUrl('user_create'));
+			}
+
+			//$user->setIsVerified(true);
+
+			$this->entity_manager->persist($user);
+			$this->entity_manager->flush();
+
+			return $this->redirectToRoute('app_authenticate', [
+				'email' => $user->getEmail(),
+				'stage' => AuthStage::AUTHORIZATION,
+			]);
+		}
+
+		return $this->render(
+			'@App/edit_form.html.twig', [
+				'form'  => $form->createView(),
+				'icon'  => $icon,
+				'title' => $title,
+				'user'  => $user,
+			]
+		);
+	}
+
 	#[Route('/list', name: 'system_user_list')]
+	#[IsGranted('ROLE_USER')]
 	public function list(Request $request): Response
 	{
 		$user_list = $this->entity_manager->getRepository(User::class)->findAll();
@@ -42,13 +87,13 @@ class UserController extends AbstractController
 	}
 
 	#[Route('/edit/{user_id}', name: 'user_edit', requirements: ['user_id' => '\d+'])]
-	#[IsGranted('ROLE_DEVELOPER')]
+	#[IsGranted('ROLE_ADMIN')]
 	public function edit(Request $request, ?int $user_id = null): Response
 	{
 		if (!$user_id)
 		{
 			$user  = new User();
-			$title = 'User registration';
+			$title = 'Creating new user';
 			$icon  = 'nf-fa-circle_user';
 		} else
 		{

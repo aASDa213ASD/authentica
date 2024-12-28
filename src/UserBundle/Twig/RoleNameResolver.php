@@ -19,8 +19,9 @@ class RoleNameResolver extends AbstractExtension
 	public function resolve(string $role): string
 	{
 		$role_mapping = [
-			'ROLE_ADMIN' => 'Administrator',
 			'ROLE_DEVELOPER' => 'Developer',
+			'ROLE_ADMIN' => 'Administrator',
+			'ROLE_USER' => 'User',
 		];
 
 		return $role_mapping[$role] ?? $role;

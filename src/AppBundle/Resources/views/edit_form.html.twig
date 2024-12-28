@@ -1,42 +1,74 @@
-{% extends "index.html.twig" %}
+{% extends "base.html.twig" %}
 
 {% block body %}
-    <div class="row">
-        <div class="col-xl-7 mx-auto">
-            <div id="users-table_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
+    <div class="h-screen flex text-gray-200">
+        <!-- Content -->
+        <div class="bg-black w-full flex justify-center items-center">
+            <div class="w-full max-w-sm space-y-12">
                 {% if title is defined %}
-                    <div class="card-header d-flex align-items-center fw-bold fs-5 p-3 border-bottom">
-                        <a class="text-dark">
-                            {% if icon is defined %}
-                                <i class="nf {{ icon }} me-1"></i>
-                            {% endif %}
-                            {{ title }}
-                        </a>
+                <div class="bg-animated-gradient z-50 flex flex-col justify-center items-center select-none py-2 rounded-sm">
+                    <h1 class="text-3xl font-bold drop-shadow-lg">
+                        {% if icon is defined %}
+                            <i class="nf {{ icon }} me-3 mb-2"></i>
+                        {% endif  %}
+                        {{ title }}
+                    </h1>
+                </div>
+                {% endif %}
+
+                {% for message in app.flashes("message") %}
+                    <div class="w-[400px] fixed top-4 right-4 z-50 p-4 mb-4 bg-zinc-900 text-red-400 border-t-4 border-red-400" role="alert">
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 w-4 h-4 me-3" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                            </svg>
+                            <h3 class="text-lg font-medium">Message</h3>
+                            <button type="button" class="ms-auto p-1.5 text-red-500 bg-transparent hover:bg-zinc-800" aria-label="Close">
+                                <span class="sr-only">Dismiss</span>
+                                <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mt-5 text-sm">
+                            {{ message|raw }}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {{ form_start(form) }}
+                {% if form_errors(form) %}
+                    <div class="w-[400px] fixed top-4 right-4 z-1 p-4 mb-4 bg-zinc-900 text-red-400 border-t-4 border-red-400" role="alert">
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 w-4 h-4 me-3" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 1 1 0 2Z"/>
+                            </svg>
+                            <h3 class="text-lg font-medium">Registration failed</h3>
+                            <button type="button" class="ms-auto p-1.5 text-red-500 bg-transparent hover:bg-zinc-800" aria-label="Close">
+                                <span class="sr-only">Dismiss</span>
+                                <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mt-5 text-sm">
+                            {{ form_errors(form) }}
+                        </div>
                     </div>
                 {% endif %}
-                <div class="card-body m-3">
-                    {% for message in app.flashes('message') %}
-                        <div class="alert alert-danger border-0 rounded-0">{{ message }}</div>
-                    {% endfor %}
 
-                    {{ form_start(form) }}
-                    {{ form_errors(form) }}
-                    {% for field in form %}
-                        <div class="col-md-12 mb-3">
-                            {{ form_row(field) }}
-                        </div>
-                    {% endfor %}
-                    <div class="d-flex">
-                        <div class="ms-auto">
-                            <button type="submit" class="btn btn-outline-dark border-0 rounded-0 mx-1 px-3"><i class="nf nf-fa-check_circle me-2"></i>Save</button>
-                            <a href="javascript:history.go(-1)" class="btn btn-outline-dark border-0 rounded-0 px-3"><i class="nf nf-md-close_circle me-2"></i>Cancel</a>
-                        </div>
+                {% for field in form %}
+                    <div class="relative z-0 w-full mb-5 group">
+                        {{ form_row(field, {'attr': {'class': 'block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 peer dark:text-white dark:border-gray-600 focus:outline-none focus:ring-0 focus:border-blue-600'}}) }}
                     </div>
-                    {{ form_end(form) }}
+                {% endfor %}
+
+                <div class="flex">
+                    <button type="submit" class="w-1/2 bg-transparent text-gray-100 p-3 font-semibold rounded-sm hover:bg-zinc-900 transition"><i class="nf nf-fa-send_o me-2 mb-1"></i>Send</button>
+                    <a href="javascript:history.go(-1)" class="w-1/2 block text-center bg-transparent text-gray-100 p-3 font-semibold hover:bg-zinc-900 transition"><i class="nf nf-md-backup_restore me-2 mb-1"></i>Cancel</a>
                 </div>
+                {{ form_end(form) }}
             </div>
         </div>
     </div>
-
-    {% include 'js.html.twig' %}
 {% endblock %}

@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\AuthBundle\Authenticator;
 
 use App\AuthBundle\Model\AuthStage;
+use App\UserBundle\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -25,10 +29,14 @@ class Login extends AbstractLoginFormAuthenticator
 
 	public const LOGIN_ROUTE = 'app_login';
 
+	private EntityManagerInterface $em;
+	private UserPasswordHasherInterface $hasher;
 	private UrlGeneratorInterface $url_generator;
 
-	public function __construct(UrlGeneratorInterface $url_generator)
+	public function __construct(EntityManagerInterface $em, UserPasswordHasherInterface $hasher, UrlGeneratorInterface $url_generator)
 	{
+		$this->em = $em;
+		$this->hasher = $hasher;
 		$this->url_generator = $url_generator;
 	}
 
@@ -36,10 +44,26 @@ class Login extends AbstractLoginFormAuthenticator
 	public function authenticate(Request $request): Passport
 	{
 		$email = $request->request->get('email', '');
+		$password = $request->request->get('password', '');
 		$request->getSession()->set('_security.last_username', $email);
 
 		return new Passport(
-			new UserBadge($email),
+			new UserBadge($email, function (string $userIdentifier) use ($password)
+			{
+				$user = $this->em->getRepository(User::class)->findOneBy(['email' => $userIdentifier]);
+
+				if (!$user || !$this->hasher->isPasswordValid($user, $password))
+				{
+					throw new AuthenticationException('Bad credentials');
+				}
+
+				if (!$user->isVerified())
+				{
+					throw new AuthenticationException('User is not verified');
+				}
+
+				return $user;
+			}),
 			new PasswordCredentials($request->request->get('password', '')),
 			[
 				new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
@@ -60,7 +84,7 @@ class Login extends AbstractLoginFormAuthenticator
 	public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
 	{
 		return new RedirectResponse($this->url_generator->generate('app_authenticate', [
-			'error' => $exception->getMessageKey(),
+			'error' => $exception->getMessage(),
 			'stage' => AuthStage::AUTHORIZATION,
 		]));
 	}

@@ -7,14 +7,14 @@ namespace App\AuthBundle\Controller;
 use App\AuthBundle\Model\AuthStage;
 use App\UserBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use DateTime;
 
 #[Route('/auth')]
 class Auth extends AbstractController
@@ -24,6 +24,12 @@ class Auth extends AbstractController
 	public function __construct(EntityManagerInterface $em)
 	{
 		$this->em = $em;
+	}
+
+	#[Route('/logout', name: 'app_logout')]
+	public function logout(): void
+	{
+		throw new \LogicException('INTERCEPTED_BY_FIREWALL');
 	}
 
 	#[Route('/login/invoke', name: 'app_login')]
@@ -42,7 +48,7 @@ class Auth extends AbstractController
 
 		$stage = $request->get('stage', AuthStage::AUTHENTICATION);
 		$error = $request->get('error') ?? $authenticationUtils->getLastAuthenticationError();
-		$email = $request->request->get('email') ?? $request->query->get('email');
+		$email = $request->get('email') ?? $request->query->get('email');
 		$last_username = $authenticationUtils->getLastUsername();
 
 		if (!empty($email))
@@ -79,14 +85,9 @@ class Auth extends AbstractController
 	}
 
 	#[Route('/registration', name: 'app_register')]
-	public function register(Request $request, AuthenticationUtils $authenticationUtils): JsonResponse
+	public function register(Request $request, AuthenticationUtils $authenticationUtils): RedirectResponse
 	{
-		if ($this->getUser())
-		{
-			return $this->redirectToRoute('app_security');
-		}
-
-		return new JsonResponse(['message' => 'Registration is disabled']);
+		return new RedirectResponse($this->generateUrl('user_create'));
 	}
 
 	#[Route('/security', name: 'app_security')]
@@ -99,16 +100,10 @@ class Auth extends AbstractController
 			return $this->redirect($this->generateUrl('app_login'));
 		}
 
-		$user->setLastLogin(new \DateTime());
+		$user->setLastLogin(new DateTime());
 		$this->em->persist($user);
 		$this->em->flush();
 
 		return $this->redirect($this->generateUrl('system_user_list'));
-	}
-
-	#[Route('/logout', name: 'app_logout')]
-	public function logout(): void
-	{
-		throw new \LogicException('INTERCEPTED_BY_FIREWALL');
 	}
 }

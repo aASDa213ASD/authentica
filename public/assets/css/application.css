@@ -87,7 +87,7 @@ body::-webkit-scrollbar
             rgba(255, 0, 0, 0.0) 50.71%),
     linear-gradient(
             127deg,
-            rgba(142, 255, 142, 0.8),
+            rgba(205, 255, 205, 0.8),
             rgba(0, 255, 0, 0.0) 70.71%
     ),
     linear-gradient(
@@ -97,5 +97,5 @@ body::-webkit-scrollbar
     );
 
     background-size: 150vw 150vh;
-    animation: 15s linear 0s infinite alternate none running granimate
+    animation: 20s linear 0s infinite alternate none running granimate
 }

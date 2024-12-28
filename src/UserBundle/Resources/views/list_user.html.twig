@@ -7,6 +7,7 @@
 
     <div class="p-10">
         <a class="text-4xl">Authorized as <span class="font-bold underline">{{ app.user.login }}</span></a>
+        <p class="text-4xl">IsVerified: {{ app.user.isVerified() ? 'Yes' : 'No' }}</p>
         <p class="text-4xl mt-4"><a href="{{ path('app_logout') }}">Logout</a></p>
     </div>
 {% endblock %}
