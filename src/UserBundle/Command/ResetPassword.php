@@ -75,14 +75,14 @@ class ResetPassword extends Command
 		$numbers = '0123456789';
 		$symbols = '!@#$%&*';
 
-		$password = $letters[random_int(0, strlen($letters) - 1)];
+		$password  = $letters[random_int(0, strlen($letters) - 1)];
 		$password .= $numbers[random_int(0, strlen($numbers) - 1)];
 		$password .= $symbols[random_int(0, strlen($symbols) - 1)];
 
 		$all_characters = $letters . $numbers . $symbols;
-		$remainingLength = $length - 3;
+		$remaining_length = $length - 3;
 
-		for ($i = 0; $i < $remainingLength; $i++)
+		for ($i = 0; $i < $remaining_length; $i++)
 		{
 			$password .= $all_characters[random_int(0, strlen($all_characters) - 1)];
 		}
