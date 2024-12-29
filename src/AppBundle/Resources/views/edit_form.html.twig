@@ -1,5 +1,16 @@
 {% extends "base.html.twig" %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+	    document.addEventListener('DOMContentLoaded', (event) => {
+		    const recaptcha = document.querySelector('.g-recaptcha');
+		    recaptcha.setAttribute("data-theme", "dark");
+	    });
+    </script>
+{% endblock %}
+
 {% block body %}
     <div class="h-screen flex text-gray-200">
         <!-- Content -->
@@ -58,9 +69,15 @@
                 {% endif %}
 
                 {% for field in form %}
-                    <div class="relative z-0 w-full mb-5 group">
-                        {{ form_row(field, {'attr': {'class': 'block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 peer dark:text-white dark:border-gray-600 focus:outline-none focus:ring-0 focus:border-blue-600'}}) }}
-                    </div>
+                    {% if field.vars.name == 'recaptcha' %}
+                        <div class="relative z-0 w-full mb-5 group">
+                            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+                        </div>
+                    {% else %}
+                        <div class="relative z-0 w-full mb-5 group">
+                            {{ form_row(field) }}
+                        </div>
+                    {% endif %}
                 {% endfor %}
 
                 <div class="flex">

@@ -69,6 +69,7 @@ class UserController extends AbstractController
 				'icon'  => $icon,
 				'title' => $title,
 				'user'  => $user,
+				'recaptcha_site_key' => $_ENV['GOOGLE_RECAPTCHA_SITE_KEY'],
 			]
 		);
 	}

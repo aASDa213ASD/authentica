@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\UserBundle\Form;
 
+use App\AuthBundle\Form\RecaptchaType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -99,6 +100,10 @@ class UserType extends AbstractType
 					]),
 				],
 				'error_bubbling' => true
+			])
+			->add('recaptcha', RecaptchaType::class, [
+				'mapped' => false,
+				'label' => false,
 			]);
 	}
 }
