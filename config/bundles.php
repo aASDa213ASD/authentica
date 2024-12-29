@@ -8,7 +8,8 @@ return [
     Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle::class => ['dev' => true, 'test' => true],
     Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
     Symfony\Bundle\WebProfilerBundle\WebProfilerBundle::class => ['dev' => true, 'test' => true],
-	App\AppBundle\AppBundle::class => ['all' => true],
-	App\UserBundle\UserBundle::class => ['all' => true],
-	App\AuthBundle\AuthBundle::class => ['all' => true],
+    App\AppBundle\AppBundle::class => ['all' => true],
+    App\UserBundle\UserBundle::class => ['all' => true],
+    App\AuthBundle\AuthBundle::class => ['all' => true],
+    Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
 ];

@@ -1,4 +1,4 @@
-- [ ] Log incorrect password attempts, implement password fatigue
+- [x] Log incorrect password attempts, implement password fatigue
 when we will not check if password is valid or not, but refuse immediately
 if user entered wrong password 3 times in a row. Password fatigue lasts for 3 minutes.
 

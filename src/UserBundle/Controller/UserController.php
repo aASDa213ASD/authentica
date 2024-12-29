@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\UserBundle\Controller;
 
-use App\AuthBundle\Model\AuthStage;
+use App\AuthBundle\Entity\AuthStage;
 use App\UserBundle\Entity\User;
 use App\UserBundle\Form\UserType;
 use Doctrine\ORM\EntityManagerInterface;
