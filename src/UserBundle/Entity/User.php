@@ -36,6 +36,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	#[ORM\Column(type: 'boolean')]
 	private bool $is_verified = false;
 
+	#[ORM\Column(type: 'boolean')]
+	private bool $is_2fa_enabled = false;
+
 	#[ORM\Column(type: 'datetime', nullable: true)]
 	private ?\DateTime $last_login_at;
 
@@ -121,6 +124,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	public function setIsVerified(bool $flag): self
 	{
 		$this->is_verified = $flag;
+		return $this;
+	}
+
+	public function is2FAEnabled(): bool
+	{
+		return $this->is_2fa_enabled;
+	}
+
+	public function setIs2FAEnabled(bool $flag): self
+	{
+		$this->is_2fa_enabled = $flag;
 		return $this;
 	}
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AuthBundle\Controller;
 
 use App\AuthBundle\Entity\AuthStage;
+use App\AuthBundle\Service\TwoFactorAuth;
 use App\UserBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,10 +21,12 @@ use DateTime;
 class Auth extends AbstractController
 {
 	private EntityManagerInterface $em;
+	private TwoFactorAuth $two_factor_auth_service;
 
 	public function __construct(EntityManagerInterface $em)
 	{
 		$this->em = $em;
+		$this->two_factor_auth_service = new TwoFactorAuth();
 	}
 
 	#[Route('/logout', name: 'app_logout')]
@@ -63,9 +66,23 @@ class Auth extends AbstractController
 				$email = $request->request->get('email');
 				$user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
 
-				if ($user instanceof User)
+				if ($user instanceof User && $user->isVerified())
 				{
-					$stage = AuthStage::AUTHORIZATION;
+					if ($user->is2FAEnabled())
+					{
+						$stage = AuthStage::AUTHORIZATION_WITH_2FA;
+						$this->two_factor_auth_service->send2FA($user);
+						$this->addFlash('message', "An email with authorization code was sent");
+					}
+					else
+					{
+						$stage = AuthStage::AUTHORIZATION;
+					}
+				}
+				elseif ($user instanceof User && !$user->isVerified())
+				{
+					$this->addFlash('message', "<span>User is not verified, you may do it <a href='{$this->generateUrl('user_verify')}' class='font-bold underline'>here</a></span>");
+					return $this->redirectToRoute('app_authenticate');
 				}
 				else
 				{

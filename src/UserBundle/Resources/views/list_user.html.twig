@@ -5,9 +5,72 @@
         <div>{{ what }}</div>
     {% endfor %}
 
-    <div class="p-10">
-        <a class="text-4xl">Authorized as <span class="font-bold underline">{{ app.user.login }}</span></a>
-        <p class="text-4xl">IsVerified: {{ app.user.isVerified() ? 'Yes' : 'No' }}</p>
-        <p class="text-4xl mt-4"><a href="{{ path('app_logout') }}">Logout</a></p>
-    </div>
+    <section class="min-h-screen flex items-center justify-center">
+        <div class="w-full max-w-screen-lg px-10 ms-auto 2xl:px-0">
+            <div class="py-4 md:py-8 p-6 rounded-lg shadow-lg">
+                <div class="mb-4 grid sm:grid-cols-2">
+                    <div class="space-y-4">
+                        <div class="flex space-x-4">
+                            <div>
+                                <span class="mb-2 inline-block rounded bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-primary-800 dark:bg-primary-900 dark:text-primary-300">{{ app.user.email }}</span>
+                                <h2 class="flex items-center text-xl font-bold leading-none text-gray-100 sm:text-2xl">{{ app.user.login }}</h2>
+                            </div>
+                        </div>
+                        <dl class="">
+                            <dt class="font-semibold text-gray-100">Email Address</dt>
+                            <dd class="text-gray-400">{{ app.user.email }}</dd>
+                        </dl>
+                        <dl>
+                            <dt class="font-semibold text-gray-100">Role</dt>
+                            <dd>
+                                <span class="mb-2 inline-block rounded bg-zinc-800 px-2.5 py-0.5 font-bold text-xs text-primary-800 dark:bg-primary-900 dark:text-primary-300">
+                                    {{ resolve_role_name(app.user.role) }}
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="space-y-4">
+                        <dl>
+                            <dt class="font-semibold text-gray-100">Verification status</dt>
+                            <dd>
+                                {% if app.user.isVerified() %}
+                                    <span class="mb-2 inline-block rounded bg-emerald-700 px-2.5 py-0.5 font-bold text-xs text-primary-800 dark:bg-primary-900 dark:text-primary-300">VERIFIED</span>
+                                {% else %}
+                                    <span class="mb-2 inline-block rounded bg-red-700 px-2.5 py-0.5 font-bold text-xs text-primary-800 dark:bg-primary-900 dark:text-primary-300">NOT VERIFIED</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt class="font-semibold text-gray-100">2FA Status</dt>
+                            <dd class="flex items-center gap-1 text-gray-400">
+                                {% if app.user.is2FAEnabled() %}
+                                    <span class="mb-2 inline-block rounded bg-emerald-700 px-2.5 py-0.5 font-bold text-xs text-primary-800 dark:bg-primary-900 dark:text-primary-300">ENABLED</span>
+                                {% else %}
+                                    <span class="mb-2 inline-block rounded bg-red-700 px-2.5 py-0.5 font-bold text-xs text-primary-800 dark:bg-primary-900 dark:text-primary-300">DISABLED</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt class="mb-1 font-semibold text-gray-100">Last login at</dt>
+                            <dd class="flex items-center space-x-4">
+                                <span class="mb-2 inline-block rounded bg-zinc-800 px-2.5 py-0.5 font-bold text-xs text-primary-800 dark:bg-primary-900 dark:text-primary-300">
+                                    {{ app.user.getLastLogin()|default('Never')|date('d.m.Y H:i') }}
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="mt-4 flex space-x-4">
+                    <a href={{ path('user_edit', { 'user_id': app.user.id }) }} class="inline-flex bg-transparent text-gray-100 p-3 font-semibold rounded-sm hover:bg-zinc-900 transition">
+                        <i class="nf nf-fa-edit me-3"></i>
+                        Edit account
+                    </a>
+                    <a href="{{ path('app_logout') }}" class="inline-flex bg-transparent text-gray-100 p-3 font-semibold rounded-sm hover:bg-zinc-900 transition">
+                        <i class="nf nf-md-logout_variant me-3"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AuthBundle\Authenticator;
 
 use App\AuthBundle\Entity\AuthStage;
+use App\AuthBundle\Service\TwoFactorAuth;
 use App\UserBundle\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +20,6 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Predis\Client as Redis;
@@ -36,7 +36,7 @@ class Login extends AbstractLoginFormAuthenticator
 	private EntityManagerInterface $em;
 	private UserPasswordHasherInterface $hasher;
 	private UrlGeneratorInterface $url_generator;
-
+	private TwoFactorAuth $two_factor_auth_service;
 	private bool $password_fatigue_enabled = false;
 	private int $password_fatigue_time_seconds = 180;
 
@@ -51,6 +51,7 @@ class Login extends AbstractLoginFormAuthenticator
 		$this->em = $em;
 		$this->hasher = $hasher;
 		$this->url_generator = $url_generator;
+		$this->two_factor_auth_service = new TwoFactorAuth();
 		$this->redis = new Redis();
 	}
 
@@ -86,7 +87,7 @@ class Login extends AbstractLoginFormAuthenticator
 	{
 		return new RedirectResponse($this->url_generator->generate('app_authenticate', [
 			'error' => $exception->getMessage(),
-			'stage' => AuthStage::AUTHORIZATION,
+			'stage' => AuthStage::AUTHENTICATION,
 		]));
 	}
 
@@ -114,14 +115,22 @@ class Login extends AbstractLoginFormAuthenticator
 			]);
 
 			$this->addAuthorizationFatigue($email);
-
-			//throw new AuthenticationException('Bad credentials');
 			throw new AuthenticationException("Bad credentials");
 		}
 
 		if (!$user->isVerified())
 		{
 			throw new AuthenticationException('User is not verified');
+		}
+
+		if ($user->is2FAEnabled())
+		{
+			$code = $request->request->get('2fa');
+
+			if (!$this->two_factor_auth_service->verify2FA($code))
+			{
+				throw new AuthenticationException('Invalid 2FA');
+			}
 		}
 
 		return $user;

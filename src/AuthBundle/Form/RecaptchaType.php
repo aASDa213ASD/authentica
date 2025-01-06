@@ -20,6 +20,14 @@ class RecaptchaType extends AbstractType
 				'attr' => ['class' => 'g-recaptcha',],
 				'mapped' => false,
 				'label' => false,
+				'error_bubbling' => true,
 			]);
+	}
+
+	public function configureOptions(OptionsResolver $resolver): void
+	{
+		$resolver->setDefaults([
+			'csrf_protection' => false,
+		]);
 	}
 }

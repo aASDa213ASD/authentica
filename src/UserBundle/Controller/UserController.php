@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\UserBundle\Controller;
 
 use App\AuthBundle\Entity\AuthStage;
+use App\AuthBundle\Service\RecaptchaValidator;
 use App\UserBundle\Entity\User;
+use App\UserBundle\Form\UserEditType;
 use App\UserBundle\Form\UserType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +22,7 @@ class UserController extends AbstractController
 {
 	private EntityManagerInterface $entity_manager;
 	private UserPasswordHasherInterface $user_password_encoder;
+	private RecaptchaValidator $recaptcha_validator;
 
 	public function __construct(
 		EntityManagerInterface $entity_manager,
@@ -27,6 +30,7 @@ class UserController extends AbstractController
 	) {
 		$this->entity_manager = $entity_manager;
 		$this->user_password_encoder = $user_password_encoder;
+		$this->recaptcha_validator = new RecaptchaValidator($_ENV['GOOGLE_RECAPTCHA_SECRET']);
 	}
 
 	#[Route('/create', name: 'user_create')]
@@ -41,6 +45,15 @@ class UserController extends AbstractController
 
 		if ($form->isSubmitted() && $form->isValid())
 		{
+			$recaptchaResponse = $request->request->get('g-recaptcha-response');
+			$is_valid = $this->recaptcha_validator->validate($recaptchaResponse);
+
+			if (!$is_valid)
+			{
+				$this->addFlash('message', 'Invalid recaptcha');
+				return $this->redirect($this->generateUrl('user_create'));
+			}
+
 			$password = $form['password']->getData();
 			if ($password)
 			{
@@ -59,7 +72,7 @@ class UserController extends AbstractController
 
 			return $this->redirectToRoute('app_authenticate', [
 				'email' => $user->getEmail(),
-				'stage' => AuthStage::AUTHORIZATION,
+				'stage' => AuthStage::AUTHENTICATION,
 			]);
 		}
 
@@ -88,7 +101,6 @@ class UserController extends AbstractController
 	}
 
 	#[Route('/edit/{user_id}', name: 'user_edit', requirements: ['user_id' => '\d+'])]
-	#[IsGranted('ROLE_ADMIN')]
 	public function edit(Request $request, ?int $user_id = null): Response
 	{
 		if (!$user_id)
@@ -103,7 +115,17 @@ class UserController extends AbstractController
 			$icon  = 'nf-md-account_edit';
 		}
 
-		$form = $this->createForm(UserType::class, $user);
+		$currentUser = $this->getUser();
+
+		if ($user_id !== null && $currentUser instanceof User && $currentUser->getId() !== $user_id)
+		{
+			if (!$this->isGranted('ROLE_ADMIN'))
+			{
+				throw $this->createAccessDeniedException('You do not have permission to edit other users');
+			}
+		}
+
+		$form = $this->createForm(UserEditType::class, $user);
 		$form->handleRequest($request);
 
 		if ($form->isSubmitted() && $form->isValid())
@@ -119,8 +141,6 @@ class UserController extends AbstractController
 				return $this->redirect($this->generateUrl('user_edit'));
 			}
 
-			$user->setIsVerified(true);
-
 			$this->entity_manager->persist($user);
 			$this->entity_manager->flush();
 
@@ -133,6 +153,7 @@ class UserController extends AbstractController
 				'icon'  => $icon,
 				'title' => $title,
 				'user'  => $user,
+				'recaptcha_site_key' => null
 			]
 		);
 	}
